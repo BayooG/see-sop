@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import datetime
 
 
 def generate_pie_chart(data, title="Shares"):
@@ -16,6 +17,10 @@ def generate_pie_chart(data, title="Shares"):
 def main():
     st.title("See SOP 👀")
 
+    if st.session_state.get("sops") is None:
+        st.session_state["sops"] = {}
+    sops = st.session_state["sops"]
+
     # Input fields
     company = st.text_input("Enter company name:")
     number_of_shares = st.number_input("number of shares:", min_value=0)
@@ -24,34 +29,43 @@ def main():
     vesting_tranche = st.number_input(
         "Enter percentage:", min_value=0.0, max_value=100.0, format="%f"
     )
-    today = pd.Timestamp("today")
-
-    # this dataframe will represent one SOP agreement.
-    data = pd.DataFrame(
-        {
-            "status": ["vested", "unvested"],
-            "number_of_shares": [50, 50],
-        }
-    )
+    today = datetime.date.today()
 
     # Submit button
     if st.button("Add Data"):
-        pass
+        months = (today - start_date) / pd.Timedelta(days=30)
+        vested_shares = number_of_shares * (
+            (vesting_tranche / 100) * (months / vesting_period)
+        )
+        if company not in sops:
+            data = pd.DataFrame(
+                {
+                    "status": ["To be vested", "Vested"],
+                    "number_of_shares": [
+                        number_of_shares - vested_shares,
+                        vested_shares,
+                    ],
+                }
+            )
+            sops[company] = [data]
+        else:
+            data = sops[company][0]
+            data.loc[0, "number_of_shares"] = (
+                number_of_shares - vested_shares + data.loc[0, "number_of_shares"]
+            )
 
-    # data = pd.DataFrame(
-    #     {
-    #         "company": ["company", "company2"],
-    #         "number_of_shares": [5, 10],
-    #     }
-    # )
-    # Display pie chart and details
-    if "data" in locals():
-        st.subheader("Pie Chart:")
-        pie_chart = generate_pie_chart(data)
-        st.plotly_chart(pie_chart)
+            data.loc[1, "number_of_shares"] = (
+                data.loc[1, "number_of_shares"] + vested_shares
+            )
+            sops[company] = [data]
 
-        # st.subheader("Details:")
-        # st.write(data.describe())
+    for company, data in sops.items():
+        data = data[0]
+        # Display pie chart and details
+        if "data" in locals():
+            st.subheader(f"{company}:")
+            pie_chart = generate_pie_chart(data)
+            st.plotly_chart(pie_chart)
 
 
 if __name__ == "__main__":
