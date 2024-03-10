@@ -15,30 +15,33 @@ router = APIRouter(prefix="/mvp")
 )
 def calculate(sop_request: SopAgreement):
     today = datetime.date.today()
-    if sop_request.cliff_period is not None:
-        possible_buying_start_point = sop_request.agreement_start_date + relativedelta(
-            month=sop_request.cliff_period
+    if sop_request.cliffPeriod is not None:
+        possible_buying_start_point = sop_request.agreementStartDate + relativedelta(
+            month=sop_request.cliffPeriod
         )
 
         if today < possible_buying_start_point:
             return SopResponse(
-                company_name=sop_request.company_name,
+                company_name=sop_request.companyName,
                 vested_shares=0,
-                start_date=sop_request.agreement_start_date,
+                start_date=sop_request.agreementStartDate,
                 current_data=today,
                 note="buying is not possible yet!",
             )
 
-    delta = relativedelta(today, sop_request.agreement_start_date)
+    delta = relativedelta(today, sop_request.agreementStartDate)
     months_passed = delta.years * 12 + delta.months
-    vesting_amount = sop_request.number_of_allocated_shares * (
-        (months_passed // sop_request.vesting_period) * sop_request.vesting_percentage
+    vesting_amount = sop_request.numberOfAllocatedShares * (
+        (months_passed // sop_request.vestingPeriod) * sop_request.vestingPercentage
     )
+    if vesting_amount > sop_request.numberOfAllocatedShares:
+        vesting_amount = sop_request.numberOfAllocatedShares
 
     return SopResponse(
-        company_name=sop_request.company_name,
+        company_name=sop_request.companyName,
         vested_shares=vesting_amount,
-        start_date=sop_request.agreement_start_date,
+        start_date=sop_request.agreementStartDate,
         current_data=today,
         note="possible to buy.",
+        number_of_allocated_shares=sop_request.numberOfAllocatedShares,
     )

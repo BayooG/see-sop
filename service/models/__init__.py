@@ -4,12 +4,12 @@ from typing import Optional
 
 
 class SopAgreement(BaseModel):
-    company_name: str
-    agreement_start_date: date
-    cliff_period: Optional[int]  # months
-    number_of_allocated_shares: int
-    vesting_period: int  # months
-    vesting_percentage: float
+    companyName: str
+    agreementStartDate: date
+    cliffPeriod: Optional[int]  # months
+    numberOfAllocatedShares: int
+    vestingPeriod: int  # months
+    vestingPercentage: float
 
 
 class SopResponse(BaseModel):
@@ -18,3 +18,4 @@ class SopResponse(BaseModel):
     current_data: date
     vested_shares: float
     note: Optional[str]
+    number_of_allocated_shares: int
