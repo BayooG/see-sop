@@ -13,7 +13,8 @@ app.include_router(mvp_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://mdisinntbif4csncmqi2e56dte0ntupn.lambda-url.eu-central-1.on.aws/"
+        "https://relaxed-mermaid-46cc2b.netlify.app",
+        "http://localhost:3001",
     ],
     allow_credentials=True,
     allow_methods=["*"],
