@@ -8,13 +8,8 @@ packages = [{ include = "see_sop" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-streamlit = "^1.30.0"
-pandas = "^2.2.0"
 uvicorn = "^0.27.0.post1"
 fastapi = "^0.109.0"
-# sqlmodel = "^0.0.14"
-# alembic = "^1.13.1"
-# psycopg2-binary = "^2.9.9"
 mangum = "^0.17.0"
 
 
