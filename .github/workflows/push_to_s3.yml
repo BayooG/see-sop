@@ -20,8 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
-          pip install --use-feature=in-tree-build .
+          pip install --target .  -r requirements.txt
 
       - name: Create ZIP file
         run: |
