@@ -24,7 +24,11 @@ jobs:
 
       - name: Create ZIP file
         run: |
-          zip -r lambda_function.zip ./
+          zip -r lambda_function.zip ./  
+      
+      - name: Delete non-zip files
+        run: |
+          find . -type f ! -name '*.zip' -delete
 
       - name: Upload ZIP file to S3
         uses: jakejarvis/s3-sync-action@master
