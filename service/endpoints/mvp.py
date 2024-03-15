@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Response, HTTPException
 from service.models import SopAgreement, SopResponse
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -14,34 +14,40 @@ router = APIRouter(prefix="/mvp")
     response_model=SopResponse,
 )
 def calculate(sop_request: SopAgreement):
-    today = datetime.date.today()
-    if sop_request.cliffPeriod is not None:
-        possible_buying_start_point = sop_request.agreementStartDate + relativedelta(
-            month=sop_request.cliffPeriod
-        )
-
-        if today < possible_buying_start_point:
-            return SopResponse(
-                company_name=sop_request.companyName,
-                vested_shares=0,
-                start_date=sop_request.agreementStartDate,
-                current_data=today,
-                note="buying is not possible yet!",
+    try:
+        today = datetime.date.today()
+        if sop_request.cliffPeriod is not None:
+            possible_buying_start_point = (
+                sop_request.agreementStartDate
+                + relativedelta(month=sop_request.cliffPeriod)
             )
 
-    delta = relativedelta(today, sop_request.agreementStartDate)
-    months_passed = delta.years * 12 + delta.months
-    vesting_amount = sop_request.numberOfAllocatedShares * (
-        (months_passed // sop_request.vestingPeriod) * sop_request.vestingPercentage
-    )
-    if vesting_amount > sop_request.numberOfAllocatedShares:
-        vesting_amount = sop_request.numberOfAllocatedShares
+            if today < possible_buying_start_point:
+                return SopResponse(
+                    company_name=sop_request.companyName,
+                    vested_shares=0,
+                    start_date=sop_request.agreementStartDate,
+                    current_data=today,
+                    note="buying is not possible yet!",
+                )
 
-    return SopResponse(
-        company_name=sop_request.companyName,
-        vested_shares=vesting_amount,
-        start_date=sop_request.agreementStartDate,
-        current_data=today,
-        note="possible to buy.",
-        number_of_allocated_shares=sop_request.numberOfAllocatedShares,
-    )
+        delta = relativedelta(today, sop_request.agreementStartDate)
+        months_passed = delta.years * 12 + delta.months
+        vesting_amount = sop_request.numberOfAllocatedShares * (
+            (months_passed // sop_request.vestingPeriod) * sop_request.vestingPercentage
+        )
+        if vesting_amount > sop_request.numberOfAllocatedShares:
+            vesting_amount = sop_request.numberOfAllocatedShares
+
+        return SopResponse(
+            company_name=sop_request.companyName,
+            vested_shares=vesting_amount,
+            start_date=sop_request.agreementStartDate,
+            current_data=today,
+            note="possible to buy.",
+            number_of_allocated_shares=sop_request.numberOfAllocatedShares,
+        )
+    except Exception as e:
+
+        print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
