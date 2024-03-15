@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, HTTPException
+from fastapi import APIRouter, HTTPException
 from service.models import SopAgreement, SopResponse
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -19,7 +19,7 @@ def calculate(sop_request: SopAgreement):
         if sop_request.cliffPeriod is not None:
             possible_buying_start_point = (
                 sop_request.agreementStartDate
-                + relativedelta(month=sop_request.cliffPeriod)
+                + relativedelta(months=sop_request.cliffPeriod)
             )
 
             if today < possible_buying_start_point:
@@ -33,21 +33,21 @@ def calculate(sop_request: SopAgreement):
 
         delta = relativedelta(today, sop_request.agreementStartDate)
         months_passed = delta.years * 12 + delta.months
-        vesting_amount = sop_request.numberOfAllocatedShares * (
-            (months_passed // sop_request.vestingPeriod) * sop_request.vestingPercentage
-        )
-        if vesting_amount > sop_request.numberOfAllocatedShares:
-            vesting_amount = sop_request.numberOfAllocatedShares
 
+        vested_percentage = min(months_passed / sop_request.vestingPeriod, 1)
+
+        vested_shares = sop_request.numberOfAllocatedShares * vested_percentage
         return SopResponse(
             company_name=sop_request.companyName,
-            vested_shares=vesting_amount,
+            vested_shares=vested_shares,
             start_date=sop_request.agreementStartDate,
             current_data=today,
             note="possible to buy.",
             number_of_allocated_shares=sop_request.numberOfAllocatedShares,
         )
     except Exception as e:
+        import traceback
 
         print(f"Error: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Internal Server Error")

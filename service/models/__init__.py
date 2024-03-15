@@ -9,7 +9,7 @@ class SopAgreement(BaseModel):
     cliffPeriod: Optional[int]  # months
     numberOfAllocatedShares: int
     vestingPeriod: int  # months
-    vestingPercentage: float
+    vestingPercentage: Optional[float]  # months
 
 
 class SopResponse(BaseModel):
