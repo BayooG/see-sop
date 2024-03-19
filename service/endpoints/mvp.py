@@ -39,9 +39,9 @@ def calculate(sop_request: SopAgreement):
         vested_shares = sop_request.numberOfAllocatedShares * vested_percentage
         return SopResponse(
             company_name=sop_request.companyName,
-            vested_shares=vested_shares,
+            vested_shares=round(vested_shares, 2),
             start_date=sop_request.agreementStartDate,
-            current_data=today,
+            current_data=str(today),
             note="possible to buy.",
             number_of_allocated_shares=sop_request.numberOfAllocatedShares,
         )
